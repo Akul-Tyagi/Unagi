@@ -1,0 +1,28 @@
+echo # Dependencies > .gitignore
+echo node_modules/ >> .gitignore
+echo npm-debug.log* >> .gitignore
+echo yarn-debug.log* >> .gitignore
+echo yarn-error.log* >> .gitignore
+echo. >> .gitignore
+echo # Environment variables >> .gitignore
+echo .env >> .gitignore
+echo .env.local >> .gitignore
+echo .env.development.local >> .gitignore
+echo .env.test.local >> .gitignore
+echo .env.production.local >> .gitignore
+echo. >> .gitignore
+echo # Next.js >> .gitignore
+echo .next/ >> .gitignore
+echo out/ >> .gitignore
+echo build/ >> .gitignore
+echo. >> .gitignore
+echo # Logs >> .gitignore
+echo *.log >> .gitignore
+echo. >> .gitignore
+echo # OS generated files >> .gitignore
+echo .DS_Store >> .gitignore
+echo Thumbs.db >> .gitignore
+echo. >> .gitignore
+echo # IDE >> .gitignore
+echo .vscode/ >> .gitignore
+echo .idea/ >> .gitignore
