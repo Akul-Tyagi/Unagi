@@ -1,0 +1,38 @@
+{
+  "name": "unagi",
+  "version": "1.0.0",
+  "description": "AI-powered LinkedIn post generator with Falcon3 7B model",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.20.0",
+    "@heroicons/react": "^2.2.0",
+    "@react-three/drei": "^10.0.8",
+    "@react-three/fiber": "^9.1.2",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.12.2",
+    "motion": "^12.12.2",
+    "next": "^15.3.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.1.0",
+    "styled-components": "^6.1.18",
+    "tailwind-merge": "^3.3.0",
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@types/three": "^0.176.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "^15.3.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0"
+  }
+}
