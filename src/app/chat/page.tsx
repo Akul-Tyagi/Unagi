@@ -79,6 +79,18 @@ export default function ChatPage() {
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <ChatInterface user={user.id} />
       </div>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
     </div>
   );
 }

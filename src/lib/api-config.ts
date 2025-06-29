@@ -1,6 +1,6 @@
 // Enhanced API config that auto-updates
 
-let currentApiUrl = "https://59f5-34-168-195-6.ngrok-free.app"; // Fallback
+let currentApiUrl = "https://32a9-34-125-145-107.ngrok-free.app"; // Fallback
 
 // Apps Script Web App URL to get current ngrok URL
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7mPaqI175tMDXKFjm0ZCllLPRrGf5fr207iXBleVoj80VrpFKcTTcvfWIjfi60Xa2Ww/exec";
