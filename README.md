@@ -12,7 +12,7 @@
 
 *Generate professional, high-engagement LinkedIn posts with a fine-tuned Falcon3-7B-Instruct model*
 
-[Live Demo](https://unagi-livid.vercel.app/) • [Dataset](https://huggingface.co/datasets/Akul-Tyagi/LinkedOut-Dataset)
+[Live Demo](https://unagico.vercel.app/) • [Dataset](https://huggingface.co/datasets/Akul-Tyagi/LinkedOut-Dataset)
 
 </div>
 
@@ -29,7 +29,6 @@
 - [API Endpoints](#-api-endpoints)
 - [Getting Started](#-getting-started)
 - [Google Colab Setup](#-google-colab-setup)
-- [Environment Variables](#-environment-variables)
 - [Project Structure](#-project-structure)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -401,23 +400,6 @@ This will:
 ### 5. Keep Alive
 
 Keep the notebook running to serve requests. The API will be available at the ngrok URL displayed.
-
----
-
-## 🔐 Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# Site URL (for OAuth callbacks)
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-For production on Vercel, add these as environment variables in your project settings.
 
 ---
 
