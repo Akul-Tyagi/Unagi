@@ -61,17 +61,10 @@ export default function StatusIndicator() {
   const statusInfo = getStatusInfo();
   const scheduleInfo = getScheduleInfo();
 
-  // Animation variants
-  const pulse = {
-    animate: {
-      scale: [1, 1.1, 1],
-      opacity: [0.9, 1, 0.9],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
+  // Animation for pulse effect
+  const pulseAnimation = {
+    scale: [1, 1.1, 1],
+    opacity: [0.9, 1, 0.9],
   };
 
   return (
@@ -83,8 +76,12 @@ export default function StatusIndicator() {
     >
       <motion.div 
         className={`flex items-center justify-center w-10 h-10 rounded-full bg-white ${statusInfo.glow}`}
-        variants={pulse}
-        animate="animate"
+        animate={pulseAnimation}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
       >
         <span className={`text-xl ${statusInfo.color} font-bold`}>
           {statusInfo.icon}

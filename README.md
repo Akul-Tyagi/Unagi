@@ -1,59 +1,91 @@
 # Unagi
 
-Unagi is an AI-powered LinkedIn post generator designed to help professionals craft compelling posts that command attention. With a sophisticated black aesthetic and elegant design, Unagi operates on a scheduled processing model using Google Colab, ensuring that your content is generated efficiently and effectively.
+Unagi is an AI-powered LinkedIn post generator using a fine-tuned Falcon3-7B model with LoRA adapters. It helps professionals craft compelling LinkedIn posts with customizable tone and length.
 
 ## Features
 
-- **AI-Powered Content Generation**: Leverage advanced AI algorithms to create engaging LinkedIn posts tailored to your needs.
-- **Scheduled Processing**: Enjoy a seamless experience with scheduled processing windows, allowing you to plan your content strategy effectively.
-- **Real-Time Status Dashboard**: Monitor the status of your requests with a user-friendly dashboard that provides live updates on processing and queue status.
-- **Elegant User Interface**: Experience a minimalist luxury design that enhances usability and engagement.
-- **Multi-Step Post Generation Form**: Input your post details through an intuitive form that guides you through the process.
-- **Queue Management**: Track your request status, modify or cancel pending requests, and view your request history.
-- **Email Notifications**: Stay informed with email updates on your request status and processing windows.
-- **Responsive Design**: Access Unagi on any device with a mobile-first approach and optimized performance.
+- **Custom Fine-Tuned AI**: Falcon3-7B model with LoRA adapters trained specifically for LinkedIn content
+- **Multiple Tones**: Professional, Casual, Enthusiastic, Thoughtful, Inspirational
+- **Adjustable Length**: Short, Medium, or Long posts
+- **Real-Time Status**: Live API status indicator
+- **Elegant UI**: Modern, responsive design with smooth animations
+- **Authentication**: Secure login via Supabase (Email/Google)
 
-## Getting Started
+## Quick Start
 
-To get started with Unagi, follow these steps:
+### 1. Start the AI Backend (Google Colab)
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/unagi.git
-   cd unagi
-   ```
+1. Open `colab/UNAGI_OPTIMIZED.py` in Google Colab
+2. Run cells 1-4 in order
+3. Copy the ngrok URL displayed
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+### 2. Update API URL
 
-3. **Run the Development Server**:
-   ```bash
-   npm run dev
-   ```
+**Option A - Vercel Environment Variable (Recommended):**
+- Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+- Add: `NEXT_PUBLIC_COLAB_API_URL` = `https://xxxx.ngrok-free.app`
+- Redeploy
 
-4. **Open Your Browser**: Navigate to `http://localhost:3000` to view the application.
+**Option B - Direct Code Update:**
+- Update `FALLBACK_API_URL` in `src/lib/api-config.ts`
+- Commit and push to trigger deployment
 
-## Technologies Used
+### 3. Use the Website
 
-- **Next.js**: A React framework for building server-rendered applications.
-- **Tailwind CSS**: A utility-first CSS framework for styling.
-- **TypeScript**: A superset of JavaScript that adds static types.
-- **Google Colab**: Used for AI processing and content generation.
+Visit your deployed Unagi website and start generating posts!
 
-## Contributing
+## Local Development
 
-We welcome contributions to Unagi! If you have suggestions or improvements, please fork the repository and submit a pull request.
+```bash
+# Install dependencies
+npm install
+
+# Create .env.local with your Supabase credentials
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_COLAB_API_URL=https://your-ngrok-url.ngrok-free.app
+
+# Run development server
+npm run dev
+```
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes (proxy to Colab)
+│   │   ├── generate/      # POST generation endpoint
+│   │   └── status/        # GET status endpoint
+│   ├── auth/              # Auth callback routes
+│   └── chat/              # Main chat interface
+├── components/            # React components
+│   ├── chat/              # Chat UI components
+│   ├── landing/           # Landing page components
+│   └── ui/                # Reusable UI components
+├── contexts/              # React contexts (auth)
+├── hooks/                 # Custom hooks
+└── lib/                   # Utilities and configs
+    ├── api-config.ts      # API URL configuration
+    └── supabase/          # Supabase client setup
+```
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **3D Graphics**: Three.js, React Three Fiber
+- **Animations**: Framer Motion
+- **Auth**: Supabase
+- **AI Backend**: Google Colab, Falcon3-7B, LoRA, FastAPI, ngrok
+
+## How It Works
+
+1. User enters topic, tone, and length on the website
+2. Request goes to Next.js API route (`/api/generate`)
+3. Next.js proxies request to Colab via ngrok tunnel
+4. Falcon3-7B generates the LinkedIn post
+5. Response returns through the proxy to the user
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Contact
-
-For questions or feedback, please reach out to [your-email@example.com]. 
-
----
-
-Unagi is designed to be a premium AI tool that professionals can trust with their LinkedIn presence, clearly communicating the scheduled processing model as a feature, not a limitation.
+MIT License

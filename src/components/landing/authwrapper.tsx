@@ -79,11 +79,11 @@ export default function AuthWrapper() {
   const fieldVariants = {
     focused: { 
       scale: 1.02,
-      transition: { type: "spring", stiffness: 300, damping: 30 }
+      transition: { type: "spring" as const, stiffness: 300, damping: 30 }
     },
     unfocused: { 
       scale: 1,
-      transition: { type: "spring", stiffness: 300, damping: 30 }
+      transition: { type: "spring" as const, stiffness: 300, damping: 30 }
     }
   };
 
