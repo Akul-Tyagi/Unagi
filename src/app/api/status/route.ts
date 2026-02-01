@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentApiUrl } from '@/lib/api-config';
 
-// Quick timeout for status checks (5 seconds)
-const STATUS_TIMEOUT = 5000;
+// Quick timeout for status checks (7 seconds)
+const STATUS_TIMEOUT = 7000;
 
 function getOfflineStatus() {
     // When Colab is not running, show as Inactive

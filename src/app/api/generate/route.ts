@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentApiUrl } from '@/lib/api-config';
 
-// Timeout for generation requests (90 seconds - generation can take time)
-const GENERATION_TIMEOUT = 90000;
+// Timeout for generation requests (100 seconds - generation can take time)
+const GENERATION_TIMEOUT = 100000;
 
 export async function POST(request: Request) {
     try {
