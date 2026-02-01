@@ -8,10 +8,12 @@
 # 2. Run Cell 2 (Upload Model) - Upload your model.zip when prompted
 # 3. Run Cell 3 (Load Model) - Wait for model to load (~2-3 min)
 # 4. Run Cell 4 (Start Server) - Copy the ngrok URL displayed
-# 5. Update NEXT_PUBLIC_COLAB_API_URL in Vercel dashboard OR
+# 5. Run Cell 5 (Keep-Alive) - Prevents Colab from timing out!
+# 6. Update NEXT_PUBLIC_COLAB_API_URL in Vercel dashboard OR
 #    update FALLBACK_API_URL in src/lib/api-config.ts
 #
 # That's it! Your Unagi website is now connected to the AI.
+# The keep-alive will ping every 8 minutes to keep your session active.
 # ============================================================================
 
 
@@ -424,3 +426,114 @@ print(result.get("generated_text", "Error: " + str(result)))
 print("-" * 40)
 print(f"Processing time: {result.get('processing_time', 'N/A')} seconds")
 """
+
+
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  CELL 5: KEEP-ALIVE (Run this to prevent Colab timeout)                  ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+import threading
+import time
+import random
+from datetime import datetime
+from IPython.display import display, HTML, clear_output
+
+class KeepAlive:
+    """
+    Background keep-alive mechanism to prevent Colab from timing out.
+    Runs lightweight operations periodically without affecting the model.
+    """
+    
+    def __init__(self, interval_minutes=8):
+        self.interval = interval_minutes * 60  # Convert to seconds
+        self.running = False
+        self.thread = None
+        self.ping_count = 0
+        self.start_time = None
+        
+    def _keep_alive_worker(self):
+        """Background worker that performs lightweight operations"""
+        while self.running:
+            try:
+                self.ping_count += 1
+                current_time = datetime.now().strftime("%H:%M:%S")
+                elapsed = (time.time() - self.start_time) / 60
+                
+                # Lightweight operations to keep the kernel active
+                _ = sum(range(1000))  # Simple CPU operation
+                _ = [random.random() for _ in range(100)]  # Memory operation
+                
+                # Optional: Quick GPU ping if available (very lightweight)
+                if torch.cuda.is_available():
+                    x = torch.ones(10, device="cuda")
+                    del x
+                
+                # Print status update
+                print(f"[{current_time}] 💚 Keep-alive ping #{self.ping_count} | "
+                      f"Session active: {elapsed:.1f} min | "
+                      f"Next ping in {self.interval // 60} min")
+                
+            except Exception as e:
+                print(f"[Keep-alive] Minor error (safe to ignore): {e}")
+            
+            # Sleep in small intervals so we can stop quickly if needed
+            for _ in range(self.interval):
+                if not self.running:
+                    break
+                time.sleep(1)
+    
+    def start(self):
+        """Start the keep-alive background thread"""
+        if self.running:
+            print("⚠️  Keep-alive is already running!")
+            return
+        
+        self.running = True
+        self.start_time = time.time()
+        self.thread = threading.Thread(target=self._keep_alive_worker, daemon=True)
+        self.thread.start()
+        
+        print("=" * 60)
+        print("🔄 KEEP-ALIVE ACTIVATED")
+        print("=" * 60)
+        print(f"✓ Pinging every {self.interval // 60} minutes")
+        print("✓ Your Colab session will stay active!")
+        print("✓ This runs in the background - you can use Unagi normally")
+        print("\n💡 To stop: run  keep_alive.stop()")
+        print("=" * 60)
+    
+    def stop(self):
+        """Stop the keep-alive background thread"""
+        if not self.running:
+            print("⚠️  Keep-alive is not running")
+            return
+        
+        self.running = False
+        if self.thread:
+            self.thread.join(timeout=5)
+        
+        elapsed = (time.time() - self.start_time) / 60
+        print("=" * 60)
+        print("⏹️  KEEP-ALIVE STOPPED")
+        print("=" * 60)
+        print(f"✓ Total pings: {self.ping_count}")
+        print(f"✓ Session was active for: {elapsed:.1f} minutes")
+        print("=" * 60)
+    
+    def status(self):
+        """Check keep-alive status"""
+        if self.running:
+            elapsed = (time.time() - self.start_time) / 60
+            print(f"✓ Keep-alive is ACTIVE | Pings: {self.ping_count} | "
+                  f"Running for: {elapsed:.1f} min")
+        else:
+            print("✗ Keep-alive is NOT running")
+
+# Create and start the keep-alive instance
+keep_alive = KeepAlive(interval_minutes=8)
+keep_alive.start()
+
+# ─── Manual Controls (run these in separate cells if needed) ─────────────────
+# keep_alive.stop()    # Stop the keep-alive
+# keep_alive.status()  # Check current status
+# keep_alive.start()   # Restart if stopped
