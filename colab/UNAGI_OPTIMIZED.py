@@ -21,9 +21,15 @@
 # ║  CELL 1: ENVIRONMENT SETUP (Run this first)                              ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
-# Install all required packages
+# Uninstall pre-installed conflicting versions first
+!pip uninstall -y torch torchvision torchaudio 2>/dev/null
+
+# Install compatible versions together (torch 2.6.0 + torchvision 0.21.0)
+!pip install -q torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+
+# Install all other required packages
 !pip install -q transformers==4.51.2 accelerate==1.6.0 peft==0.15.1 \
-    bitsandbytes==0.45.5 torch==2.6.0 sentencepiece==0.2.0 \
+    bitsandbytes==0.45.5 sentencepiece==0.2.0 \
     fastapi==0.115.12 uvicorn==0.34.2 pyngrok==7.2.9 \
     huggingface-hub==0.32.3 protobuf==6.31.1 nest_asyncio
 
@@ -349,7 +355,15 @@ async def generate_post(request: PostRequest):
 # ─── Start Server ────────────────────────────────────────────────────────────
 
 def start_server():
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="warning")
+    """Start uvicorn server with its own event loop"""
+    import asyncio
+    # Create a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="warning")
+    server = uvicorn.Server(config)
+    loop.run_until_complete(server.serve())
 
 def start_services():
     print("=" * 60)
@@ -366,12 +380,13 @@ def start_services():
     NGROK_TOKEN = "2xo4I0POrb4cA5CFWCcTurWrbt8_iQf6jGXka3dVRdQ6F3VM"  # Your token
     conf.get_default().auth_token = NGROK_TOKEN
     
-    # Check for existing tunnel
-    tunnels = ngrok.get_tunnels()
-    if tunnels:
-        public_url = str(tunnels[0].public_url)
-    else:
-        public_url = str(ngrok.connect(8000))
+    # Close any existing tunnels to avoid duplicates
+    for tunnel in ngrok.get_tunnels():
+        ngrok.disconnect(tunnel.public_url)
+    
+    # Create new tunnel
+    tunnel = ngrok.connect(8000)
+    public_url = tunnel.public_url  # This is just the URL string
     
     print("✓ Ngrok tunnel established")
     
@@ -432,108 +447,68 @@ print(f"Processing time: {result.get('processing_time', 'N/A')} seconds")
 # ║  CELL 5: KEEP-ALIVE (Run this to prevent Colab timeout)                  ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
-import threading
 import time
 import random
 from datetime import datetime
-from IPython.display import display, HTML, clear_output
+from IPython.display import display, clear_output
+import ipywidgets as widgets
 
-class KeepAlive:
+def keep_alive_forever(interval_minutes=5):
     """
-    Background keep-alive mechanism to prevent Colab from timing out.
-    Runs lightweight operations periodically without affecting the model.
-    """
+    Foreground keep-alive loop that prevents Colab from timing out.
+    This cell will keep running indefinitely - that's intentional!
     
-    def __init__(self, interval_minutes=8):
-        self.interval = interval_minutes * 60  # Convert to seconds
-        self.running = False
-        self.thread = None
-        self.ping_count = 0
-        self.start_time = None
-        
-    def _keep_alive_worker(self):
-        """Background worker that performs lightweight operations"""
-        while self.running:
-            try:
-                self.ping_count += 1
-                current_time = datetime.now().strftime("%H:%M:%S")
-                elapsed = (time.time() - self.start_time) / 60
-                
-                # Lightweight operations to keep the kernel active
-                _ = sum(range(1000))  # Simple CPU operation
-                _ = [random.random() for _ in range(100)]  # Memory operation
-                
-                # Optional: Quick GPU ping if available (very lightweight)
-                if torch.cuda.is_available():
-                    x = torch.ones(10, device="cuda")
-                    del x
-                
-                # Print status update
-                print(f"[{current_time}] 💚 Keep-alive ping #{self.ping_count} | "
-                      f"Session active: {elapsed:.1f} min | "
-                      f"Next ping in {self.interval // 60} min")
-                
-            except Exception as e:
-                print(f"[Keep-alive] Minor error (safe to ignore): {e}")
+    Press the STOP button (⬛) in Colab to stop it when you're done.
+    """
+    print("=" * 60)
+    print("🔄 KEEP-ALIVE RUNNING (This cell stays active!)")
+    print("=" * 60)
+    print(f"✓ Pinging every {interval_minutes} minutes")
+    print("✓ Your Colab session will stay active!")
+    print("✓ Press ⬛ STOP button to end the session")
+    print("=" * 60 + "\n")
+    
+    ping_count = 0
+    start_time = time.time()
+    interval_seconds = interval_minutes * 60
+    
+    try:
+        while True:
+            ping_count += 1
+            current_time = datetime.now().strftime("%H:%M:%S")
+            elapsed = (time.time() - start_time) / 60
             
-            # Sleep in small intervals so we can stop quickly if needed
-            for _ in range(self.interval):
-                if not self.running:
-                    break
-                time.sleep(1)
-    
-    def start(self):
-        """Start the keep-alive background thread"""
-        if self.running:
-            print("⚠️  Keep-alive is already running!")
-            return
-        
-        self.running = True
-        self.start_time = time.time()
-        self.thread = threading.Thread(target=self._keep_alive_worker, daemon=True)
-        self.thread.start()
-        
-        print("=" * 60)
-        print("🔄 KEEP-ALIVE ACTIVATED")
-        print("=" * 60)
-        print(f"✓ Pinging every {self.interval // 60} minutes")
-        print("✓ Your Colab session will stay active!")
-        print("✓ This runs in the background - you can use Unagi normally")
-        print("\n💡 To stop: run  keep_alive.stop()")
-        print("=" * 60)
-    
-    def stop(self):
-        """Stop the keep-alive background thread"""
-        if not self.running:
-            print("⚠️  Keep-alive is not running")
-            return
-        
-        self.running = False
-        if self.thread:
-            self.thread.join(timeout=5)
-        
-        elapsed = (time.time() - self.start_time) / 60
-        print("=" * 60)
+            # Lightweight operations to keep kernel active
+            _ = sum(range(10000))
+            _ = [random.random() for _ in range(1000)]
+            
+            # GPU ping if available
+            if torch.cuda.is_available():
+                x = torch.ones(100, device="cuda")
+                y = x * 2
+                del x, y
+                torch.cuda.empty_cache()
+            
+            # Status update
+            print(f"[{current_time}] 💚 Ping #{ping_count} | "
+                  f"Session: {elapsed:.1f} min | "
+                  f"GPU: {'✓' if torch.cuda.is_available() else '✗'} | "
+                  f"Next: {interval_minutes} min")
+            
+            # Sleep in 30-second chunks to be more responsive
+            for _ in range(interval_seconds // 30):
+                time.sleep(30)
+                # Small activity during sleep
+                _ = sum(range(100))
+                
+    except KeyboardInterrupt:
+        elapsed = (time.time() - start_time) / 60
+        print("\n" + "=" * 60)
         print("⏹️  KEEP-ALIVE STOPPED")
         print("=" * 60)
-        print(f"✓ Total pings: {self.ping_count}")
+        print(f"✓ Total pings: {ping_count}")
         print(f"✓ Session was active for: {elapsed:.1f} minutes")
         print("=" * 60)
-    
-    def status(self):
-        """Check keep-alive status"""
-        if self.running:
-            elapsed = (time.time() - self.start_time) / 60
-            print(f"✓ Keep-alive is ACTIVE | Pings: {self.ping_count} | "
-                  f"Running for: {elapsed:.1f} min")
-        else:
-            print("✗ Keep-alive is NOT running")
 
-# Create and start the keep-alive instance
-keep_alive = KeepAlive(interval_minutes=8)
-keep_alive.start()
-
-# ─── Manual Controls (run these in separate cells if needed) ─────────────────
-# keep_alive.stop()    # Stop the keep-alive
-# keep_alive.status()  # Check current status
-# keep_alive.start()   # Restart if stopped
+# Run the keep-alive (this will keep running until you stop it!)
+keep_alive_forever(interval_minutes=7)
